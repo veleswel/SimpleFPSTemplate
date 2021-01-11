@@ -14,7 +14,6 @@ AFPSHUD::AFPSHUD()
 	CrosshairTex = CrosshairTexObj.Object;
 }
 
-
 void AFPSHUD::DrawHUD()
 {
 	Super::DrawHUD();
