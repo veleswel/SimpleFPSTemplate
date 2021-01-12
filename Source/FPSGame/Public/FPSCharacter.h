@@ -48,6 +48,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	UAnimSequence* FireAnimation;
 
+	UPROPERTY(BlueprintReadonly, Category = "Gameplay")
+	bool bIsCarryingObjective;
+
 protected:
 	
 	/** Fires a projectile. */
