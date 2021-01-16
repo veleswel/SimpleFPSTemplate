@@ -2,14 +2,22 @@
 
 #include "FPSCharacter.h"
 #include "FPSProjectile.h"
+
 #include "Animation/AnimInstance.h"
+
 #include "Camera/CameraComponent.h"
+
 #include "Components/CapsuleComponent.h"
+#include "Components/PawnNoiseEmitterComponent.h"
+
 #include "Kismet/GameplayStatics.h"
+
 #include "Animation/AnimSequence.h"
 
 AFPSCharacter::AFPSCharacter()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	// Create a CameraComponent	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	CameraComponent->SetupAttachment(GetCapsuleComponent());
@@ -27,6 +35,8 @@ AFPSCharacter::AFPSCharacter()
 	GunMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_Gun"));
 	GunMeshComponent->CastShadow = false;
 	GunMeshComponent->SetupAttachment(Mesh1PComponent, "GripPoint");
+
+	NoiseEmitterCmp = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("NoiseEmitter"));
 }
 
 void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -42,6 +52,11 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+}
+
+void AFPSCharacter::Tick(float DeltaTime)
+{
+	PawnMakeNoise(1.f, FVector(), true, this);
 }
 
 void AFPSCharacter::Fire()
