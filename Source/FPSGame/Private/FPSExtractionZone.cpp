@@ -51,10 +51,10 @@ void AFPSExtractionZone::HandleOnComponentBeginOverlap(UPrimitiveComponent* Over
 
 	if(character->bIsCarryingObjective)
 	{
-		AFPSGameMode* gameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
-		if (gameMode)
+		AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
+		if (GameMode)
 		{
-			gameMode->CompleteMission(character);
+			GameMode->CompleteMission(character, true);
 		}
 	}
 	else

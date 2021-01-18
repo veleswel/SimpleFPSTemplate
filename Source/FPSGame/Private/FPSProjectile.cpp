@@ -4,6 +4,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 
+#include "DrawDebugHelpers.h"
+
 AFPSProjectile::AFPSProjectile() 
 {
 	// Use a sphere as a simple collision representation
@@ -37,7 +39,9 @@ void AFPSProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPr
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL) && OtherComp->IsSimulatingPhysics())
 	{
 		OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
-
-		Destroy();
 	}
+
+	MakeNoise(1.f, GetInstigator());
+	DrawDebugSphere(GetWorld(), GetActorLocation(), 32.f, 12, FColor::Green, false, 10.f);
+	Destroy();
 }

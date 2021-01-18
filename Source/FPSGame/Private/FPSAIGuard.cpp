@@ -7,6 +7,11 @@
 
 #include "DrawDebugHelpers.h"
 
+#include "Kismet/KismetMathLibrary.h"
+
+#include "FPSGameMode.h"
+#include "FPSCharacter.h"
+
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
 {
@@ -23,21 +28,50 @@ AFPSAIGuard::AFPSAIGuard()
 void AFPSAIGuard::BeginPlay()
 {
 	Super::BeginPlay();
+
+	OriginalOrientation = GetActorRotation();
 }
 
-void AFPSAIGuard::OnSeePawn(APawn* pawn)
+void AFPSAIGuard::OnSeePawn(APawn* SeenPawn)
 {
-	if (pawn != nullptr)
+	if (SeenPawn == nullptr)
 	{
-		UE_LOG(LogTemp, Log, TEXT("AFPSAIGuard::OnSeePawn"));
-		DrawDebugSphere(GetWorld(), pawn->GetActorLocation(), 32.f, 12, FColor::Yellow, false, 10.f);
+		return;
+	}
+
+	AFPSCharacter* Player = Cast<AFPSCharacter>(SeenPawn);
+
+	if (Player != nullptr)
+	{
+		DrawDebugSphere(GetWorld(), Player->GetActorLocation(), 32.f, 12, FColor::Yellow, false, 10.f);
+
+		AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
+		if (GameMode)
+		{
+			GameMode->CompleteMission(Player, false);
+		}
 	}
 }
 
-void AFPSAIGuard::OnHearNoise(APawn* pawn, const FVector& location, float volume)
+void AFPSAIGuard::OnHearNoise(APawn* Pawn, const FVector& Location, float Volume)
 {
-	UE_LOG(LogTemp, Log, TEXT("AFPSAIGuard::OnHearNoise"));
-	DrawDebugSphere(GetWorld(), location, 32.f, 12, FColor::Red, false, 10.f);
+	DrawDebugSphere(GetWorld(), Location, 32.f, 12, FColor::Red, false, 10.f);
+
+	FRotator NewLookAt = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Location);
+	NewLookAt.Normalize();
+
+	NewLookAt.Pitch = 0.f;
+	NewLookAt.Roll = 0.f;
+
+	SetActorRotation(NewLookAt);
+
+	GetWorldTimerManager().ClearTimer(TimerHandle_ResetOrientation);
+	GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSAIGuard::ResetOrientation, 3.f, false);
+}
+
+void AFPSAIGuard::ResetOrientation()
+{
+	SetActorRotation(OriginalOrientation);
 }
 
 // Called every frame
