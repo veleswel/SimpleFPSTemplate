@@ -22,6 +22,8 @@ AFPSAIGuard::AFPSAIGuard()
 
 	PawnSensingCmp->OnSeePawn.AddDynamic(this, &AFPSAIGuard::OnSeePawn);
 	PawnSensingCmp->OnHearNoise.AddDynamic(this, &AFPSAIGuard::OnHearNoise);
+
+	GuardState = EAIGuardState::Idle;
 }
 
 // Called when the game starts or when spawned
@@ -45,6 +47,8 @@ void AFPSAIGuard::OnSeePawn(APawn* SeenPawn)
 	{
 		DrawDebugSphere(GetWorld(), Player->GetActorLocation(), 32.f, 12, FColor::Yellow, false, 10.f);
 
+		SetGuardState(EAIGuardState::Alerted);
+
 		AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
 		if (GameMode)
 		{
@@ -55,6 +59,11 @@ void AFPSAIGuard::OnSeePawn(APawn* SeenPawn)
 
 void AFPSAIGuard::OnHearNoise(APawn* Pawn, const FVector& Location, float Volume)
 {
+	if (GuardState == EAIGuardState::Alerted)
+	{
+		return;
+	}
+
 	DrawDebugSphere(GetWorld(), Location, 32.f, 12, FColor::Red, false, 10.f);
 
 	FRotator NewLookAt = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Location);
@@ -66,12 +75,35 @@ void AFPSAIGuard::OnHearNoise(APawn* Pawn, const FVector& Location, float Volume
 	SetActorRotation(NewLookAt);
 
 	GetWorldTimerManager().ClearTimer(TimerHandle_ResetOrientation);
-	GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSAIGuard::ResetOrientation, 3.f, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSAIGuard::ResetOrientationAndState, 3.5f, false);
+
+	if (GuardState != EAIGuardState::Alerted)
+	{
+		SetGuardState(EAIGuardState::Suspicious);
+	}
 }
 
-void AFPSAIGuard::ResetOrientation()
+void AFPSAIGuard::ResetOrientationAndState()
 {
+	if (GuardState == EAIGuardState::Alerted)
+	{
+		return;
+	}
+
 	SetActorRotation(OriginalOrientation);
+	SetGuardState(EAIGuardState::Idle);
+}
+
+void AFPSAIGuard::SetGuardState(EAIGuardState NewState)
+{
+	if (GuardState == NewState)
+	{
+		return;
+	}
+
+	GuardState = NewState;
+
+	OnAIStateChanged(NewState);
 }
 
 // Called every frame
