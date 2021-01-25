@@ -56,4 +56,20 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+protected:
+	// AI Patorl Challenge
+
+	UPROPERTY(EditInstanceOnly, Category = "AI")
+	bool bPatrol;
+
+	UPROPERTY(EditInstanceOnly, Category = "AI", meta = (EditCondition = "bPatrol"))
+	TArray<AActor*> TargetPoints;
+
+	AActor* CurrentTargetPoint;
+
+	int32 CurrentTargetPointIndex;
+
+	void PatrolToNextTargetPoint();
+	void CheckNextTargetPoint();
 };

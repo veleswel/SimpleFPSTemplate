@@ -12,6 +12,8 @@
 #include "FPSGameMode.h"
 #include "FPSCharacter.h"
 
+#include "Classes/AIController.h"
+
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
 {
@@ -32,6 +34,11 @@ void AFPSAIGuard::BeginPlay()
 	Super::BeginPlay();
 
 	OriginalOrientation = GetActorRotation();
+
+	if (bPatrol)
+	{
+		PatrolToNextTargetPoint();
+	}
 }
 
 void AFPSAIGuard::OnSeePawn(APawn* SeenPawn)
@@ -53,6 +60,12 @@ void AFPSAIGuard::OnSeePawn(APawn* SeenPawn)
 		if (GameMode)
 		{
 			GameMode->CompleteMission(Player, false);
+		}
+
+		AAIController* AIController = GetController<AAIController>();
+		if (AIController)
+		{
+			AIController->StopMovement();
 		}
 	}
 }
@@ -81,6 +94,12 @@ void AFPSAIGuard::OnHearNoise(APawn* Pawn, const FVector& Location, float Volume
 	{
 		SetGuardState(EAIGuardState::Suspicious);
 	}
+
+	AAIController* AIController = GetController<AAIController>();
+	if (AIController)
+	{
+		AIController->StopMovement();
+	}
 }
 
 void AFPSAIGuard::ResetOrientationAndState()
@@ -92,6 +111,11 @@ void AFPSAIGuard::ResetOrientationAndState()
 
 	SetActorRotation(OriginalOrientation);
 	SetGuardState(EAIGuardState::Idle);
+
+	if (bPatrol)
+	{
+		PatrolToNextTargetPoint();
+	}
 }
 
 void AFPSAIGuard::SetGuardState(EAIGuardState NewState)
@@ -110,4 +134,42 @@ void AFPSAIGuard::SetGuardState(EAIGuardState NewState)
 void AFPSAIGuard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bPatrol)
+	{
+		CheckNextTargetPoint();
+	}
+}
+
+void AFPSAIGuard::PatrolToNextTargetPoint()
+{
+	if (CurrentTargetPoint == nullptr || CurrentTargetPointIndex >= TargetPoints.Num())
+	{
+		CurrentTargetPointIndex = 0;
+	}
+
+	CurrentTargetPoint = TargetPoints[CurrentTargetPointIndex];
+
+	AAIController* AIController = GetController<AAIController>();
+	if (AIController == nullptr)
+	{
+		return;
+	}
+
+	AIController->MoveToActor(CurrentTargetPoint);
+}
+
+void AFPSAIGuard::CheckNextTargetPoint()
+{
+	if (CurrentTargetPoint != nullptr)
+	{
+		FVector TargetLocation = CurrentTargetPoint->GetActorLocation();
+		float Distance = FVector::Distance(TargetLocation, GetActorLocation());
+
+		if (Distance < 100.f)
+		{
+			CurrentTargetPointIndex++;
+			PatrolToNextTargetPoint();
+		}
+	}
 }
