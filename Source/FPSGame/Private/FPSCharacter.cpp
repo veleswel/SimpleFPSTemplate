@@ -56,7 +56,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 void AFPSCharacter::Tick(float DeltaTime)
 {
-	PawnMakeNoise(1.f, FVector(), true, this);
+	
 }
 
 void AFPSCharacter::Fire()
@@ -102,6 +102,8 @@ void AFPSCharacter::MoveForward(float Value)
 	{
 		// add movement in that direction
 		AddMovementInput(GetActorForwardVector(), Value);
+
+		PawnMakeNoise(std::abs(Value), FVector(), true, this);
 	}
 }
 
@@ -111,5 +113,7 @@ void AFPSCharacter::MoveRight(float Value)
 	{
 		// add movement in that direction
 		AddMovementInput(GetActorRightVector(), Value);
+
+		PawnMakeNoise(std::abs(Value), FVector(), true, this);
 	}
 }
