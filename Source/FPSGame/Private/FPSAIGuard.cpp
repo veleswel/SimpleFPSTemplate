@@ -14,6 +14,8 @@
 
 #include "Classes/AIController.h"
 
+#include "Net/UnrealNetwork.h"
+
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
 {
@@ -118,6 +120,11 @@ void AFPSAIGuard::ResetOrientationAndState()
 	}
 }
 
+void AFPSAIGuard::OnRep_GuardState()
+{
+	OnAIStateChanged(GuardState);
+}
+
 void AFPSAIGuard::SetGuardState(EAIGuardState NewState)
 {
 	if (GuardState == NewState)
@@ -126,8 +133,7 @@ void AFPSAIGuard::SetGuardState(EAIGuardState NewState)
 	}
 
 	GuardState = NewState;
-
-	OnAIStateChanged(NewState);
+	OnRep_GuardState();
 }
 
 // Called every frame
@@ -172,4 +178,11 @@ void AFPSAIGuard::CheckNextTargetPoint()
 			PatrolToNextTargetPoint();
 		}
 	}
+}
+
+void AFPSAIGuard::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPSAIGuard, GuardState);
 }

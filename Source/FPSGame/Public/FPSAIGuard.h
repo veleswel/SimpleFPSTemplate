@@ -46,7 +46,11 @@ protected:
 	FRotator OriginalOrientation;
 	FTimerHandle TimerHandle_ResetOrientation;
 
+	UPROPERTY(ReplicatedUsing=OnRep_GuardState)
 	EAIGuardState GuardState;
+
+	UFUNCTION()
+	void OnRep_GuardState();
 
 	void SetGuardState(EAIGuardState NewState);
 
@@ -72,4 +76,6 @@ protected:
 
 	void PatrolToNextTargetPoint();
 	void CheckNextTargetPoint();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
