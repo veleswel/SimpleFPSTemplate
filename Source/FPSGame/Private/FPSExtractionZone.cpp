@@ -41,20 +41,20 @@ void AFPSExtractionZone::BeginPlay()
 
 void AFPSExtractionZone::HandleOnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	AFPSCharacter* character = Cast<AFPSCharacter>(OtherActor);
-	if (character == nullptr) 
+	AFPSCharacter* Character = Cast<AFPSCharacter>(OtherActor);
+	if (Character == nullptr)
 	{
 		return;
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("Extraction zone overlapped!"));
 
-	if(character->bIsCarryingObjective)
+	if(Character->bIsCarryingObjective)
 	{
 		AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
 		if (GameMode)
 		{
-			GameMode->CompleteMission(character, true);
+			GameMode->CompleteMission(Character, true);
 		}
 	}
 	else

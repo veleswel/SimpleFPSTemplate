@@ -14,6 +14,8 @@
 
 #include "Animation/AnimSequence.h"
 
+#include "Net/UnrealNetwork.h"
+
 AFPSCharacter::AFPSCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -65,6 +67,14 @@ void AFPSCharacter::Tick(float DeltaTime)
 
 		CameraComponent->SetRelativeRotation(NewRotation);
 	}
+}
+
+void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	//DOREPLIFETIME(AFPSCharacter, bIsCarryingObjective);
+	DOREPLIFETIME_CONDITION(AFPSCharacter, bIsCarryingObjective, COND_OwnerOnly);
 }
 
 void AFPSCharacter::Fire()

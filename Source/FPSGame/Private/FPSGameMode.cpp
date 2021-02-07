@@ -3,6 +3,7 @@
 #include "FPSGameMode.h"
 #include "FPSHUD.h"
 #include "FPSCharacter.h"
+#include "FPSGameState.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -17,47 +18,21 @@ AFPSGameMode::AFPSGameMode()
 	// use our custom HUD class
 	HUDClass = AFPSHUD::StaticClass();
 
-	bIsMissionEnded = false;
+	GameStateClass = AFPSGameState::StaticClass();
 }
 
 void AFPSGameMode::CompleteMission(APawn* InstigatorPawn, bool bMissionSuccess)
 {
-	if (bIsMissionEnded)
-	{
-		return;
-	}
-
 	if (InstigatorPawn == nullptr)
 	{
 		return;
 	}
 
-	InstigatorPawn->DisableInput(nullptr);
-
-	APlayerController* playerController = Cast<APlayerController>(InstigatorPawn->GetController());
-	if (playerController == nullptr)
+	AFPSGameState* GameState = GetGameState<AFPSGameState>();
+	if (GameState != nullptr)
 	{
-		return;
+		GameState->MulticastOnMissionCompleted(InstigatorPawn, bMissionSuccess);
 	}
-
-	if (SpectatingViewpointClass != nullptr)
-	{
-		TArray<AActor*> actorsOfClass;
-
-		UGameplayStatics::GetAllActorsOfClass(this, SpectatingViewpointClass, actorsOfClass);
-
-		if (actorsOfClass.Num() > 0)
-		{
-			AActor* newViewTarget = actorsOfClass[0];
-			playerController->SetViewTargetWithBlend(newViewTarget, .5f, EViewTargetBlendFunction::VTBlend_Cubic);
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("SpectatingViewpointClass is nullptr!"));
-	}
-
-	bIsMissionEnded = true;
 
 	OnMissionCompleted(InstigatorPawn, bMissionSuccess);
 }
